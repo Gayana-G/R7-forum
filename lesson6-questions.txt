@@ -2,36 +2,73 @@ Questions for Lesson 6
 
 1. When you enable CRUD operations on a table in the database, you need to add four things
 to your Rails application.  When you generate a scaffold, all four are created.What are they?
-
+- Model (DB)
+- Controller (server to perform creating, reading, updating and deleting records)
+- Views (the templates that render the UI)
+- Migrations (to modify DB schema)
 
 
 
 2. When you specify a route in config/routes.rb, you need to include certain information.  What
-must be included? In addition, you may specify an additional parameter to create a variable
+must be included? 
+- HTTP verb (get, post, put, patch, delete)
+- URLs (ex: /users, /users/:id, /users/:id/edit)
+- Controller and Actions (to specify which controller and sction should handle the request
+ex: to: users#index, to: users#create)
+Ex: get 'users', to: 'users#index'
+    get 'users/:id', to: 'users#show'
+    resources :users
+
+In addition, you may specify an additional parameter to create a variable
 that describes the route.  How do you do that? What variable is created?
 
+Use 'as:'
+get 'users/:id', to: 'users#show', as: user
 
+'as:' will create helper methods:
+user_path - will generate the path for the route ('/users/1')
+user_url - will generate the full URL for the route ('http://localhost:3000/users/1')
+Ex: 
+<%= link_to 'Show User', user_path(@user) %>
 
 3. What does the Rails db:migrate command do?
 
-
+- checks for the new migrations that have not been applied yet
+- executes migrations
+- updates DB schema
 
 4. What file do you look at to see the current database schema?
 
+db/schema.rb
 
 5. What command shows the routes?
 
+bin/rails routes
 
-6. How can you start the Rails console? How can you do CRUD operations from the console?
+6. How can you start the Rails console? 
 
+bin/rails console OR bin/rails c
+
+How can you do CRUD operations from the console?
+forum = Forum.new
+forum.forum_name = "Ruby"
+forum.description = "Ruby programming tips."
+forum.save
+Forum.all
 
 7. What statements are in erb files that make them different from html files?  What are the
 two kinds of special statements, and how are they marked in the erb file? Where are they executed?
-
+1)  Output Statments: <%= %>
+  These statements evaluate Ruby code and output the result directly into the HTML. For example, <%= @variable %> will insert the value of @variable into the rendered HTML.
+2) Scriplet Statments: <% %>
+  These statements execute Ruby code but do not produce any direct output to the HTML. 
 
 8. Consider this statement: @forum = Forum.new().  Why is Forum capitalized?  Why is @forum not
 capitalized? Why is the @ used?
 
+- Forum Capitalized: It's a class name, and in Ruby, class names are capitalized by convention.
+- @forum Not Capitalized: It's an instance variable, which is written in lowercase or snake_case.
+- @ Used: It denotes an instance variable, which is used to store data that belongs to an instance of a class.
 
 
 9. Consider these statements:
@@ -42,6 +79,9 @@ capitalized? Why is the @ used?
 
 What is the difference between Forum.new() and Forum.create()?  Why can't you do Forum.save(...)?
 
+- Forum.new(...) initialize a new Forum objects, but doesn't save it to DB
+- Forum.create(...) inithializes and saves right away the new Forum object
+- Forum.save(...) cannot be used because .save is an instance method, not a class one
 
 10. In the forums controller, you have a method called show:
 
@@ -56,6 +96,11 @@ is a hash called params that is passed to that method.  And, in this case, the p
 hash has a value, params[:id].  What is the value for this element of the hash? How
 did it get there?
 
+- default behaivour - Rails will automatically render the show.html.erb view for the corresponding controller
+- it will use params[:id] value to find the correct Forum record to display
+- params[:id] is the id of the forum record requested in the URP. 
+Ex: /forums/123  >> params[:id] = 123
+- it is extracted for the URL parameters when the request is made and it is based on the route defined for the 'show' action
 
 
 
