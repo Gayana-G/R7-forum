@@ -2,15 +2,15 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy logon logoff]
 
   # GET /users or /users.json
-  def index
-    @users = User.all
+  # def index
+  #   @users = User.all
 
-    if (session[:current_user])
-      @current_user = User.find(session[:current_user])
-    else
-      @current_user = nil
-    end
-  end
+  #   if (session[:current_user])
+  #     @current_user = User.find(session[:current_user])
+  #   else
+  #     @current_user = nil
+  #   end
+  # end
 
   # GET /users/1 or /users/1.json
   def show

@@ -3,7 +3,8 @@ Questions for Lesson 7
 1. What method do you put in the top of a controller so that something happens
 before some or all of the controller actions execute?  Where can you put that
 change so that it affects all controllers?
-
+'before_action' - to ensure something happens before some or all of the controller actions execute.
+To affect all controllers this method should be added in the ApplicationController
 
 
 2. Consider the following statement:
@@ -11,15 +12,28 @@ change so that it affects all controllers?
 bin/rails generate model subscription forum:references user:references priority:integer
 
 This creates several files, including two you need to know about.  What are they?
+app/models/subscription.rb
+db/migrate/TIMESTAMP_create_subscriptions.rb
+
 After you do this statement but before starting the rails server, you have to do another
 command.  What is that command?
-
+bin/rails db:migrate
 
 
 3. What table is created as a result of the migration described above? What are the column
 names in that table? What is the primary key? What are the foreign keys?  What does a 
 foreign key do?
+The column names in the subscriptions table are:
 
+- id (the primary key, automatically added by Rails)
+- forum_id (foreign key)
+- user_id (foreign key)
+- priority (integer)
+- created_at (automatically added timestamp)
+- updated_at (automatically added timestamp)
+
+The primary key is id.
+The foreign keys are forum_id and user_id
 
 
 4. You have the following lines in the Subscription model:
@@ -32,7 +46,10 @@ that if you have a @subscription (an instance of Subscription), you have a coupl
 used to refer to associated database methods.  What are those methods?  (Actually there are a few,
 but there are two in particular you should know.)
 
+@subscription.user - returns the User object associated with the Subscription instance.
+@subscription.forum - returns the Forum object associated with the Subscription instance.
 
+These methods allow us to access the associated User and Forum records from a Subscription instance.
 
 5. You have the following lines in the User model.
 
@@ -43,6 +60,9 @@ has_many :forums, through: :subscriptions
 What are threee important methods that are available to instances of the user model because
 of these lines?
 
+@user.subscriptions - Returns a collection of Subscription objects associated with the user.
+@user.posts - Returns a collection of Post objects associated with the user.
+@user.forums - Returns a collection of Forum objects associated with the user through their subscriptions.
 
 
 6. Suppose that user is an instance of the User class. What kind of object is returned by
@@ -67,6 +87,16 @@ Try that last line.  You will see that it creates a subscription object, but tha
 object is not entirely empty.  Which attribute is set? Where does it get that
 value?
 
+The second line: subscription = user.subscriptions line 
+triggers ActiveRecord to query the database for all Subscription records associated with the user (with user_id 1), 
+load those records, 
+and return them as a CollectionProxy object. 
+This proxy object can be used to interact with the collection of Subscription objects, offering methods for querying, building new objects, and more.
+
+When we do new_subscription = user.subscriptions.new, it creates a new Subscription object. 
+This object has its user_id attribute set. 
+The user_id attribute is automatically set to the id of the user instance (user.id) because of the association defined in the User model with has_many :subscriptions. 
+This is how the relationship is established between the User and the newly created Subscription object.
 
 
 7. Suppose that user is an instance of User, and forum is an instance of Forum.  What
@@ -74,7 +104,8 @@ Active Record Statement could you use to retrieve all the user's posts for that
 forum?  Hint: You need to have a where in your statement. Try this out in the console.
 You will see the SQL that is executed logged to the screen.  What is that SQL?
 
-
+user_posts_in_forum = user.posts.where(forum_id: forum.id)
+Post Load (0.2ms)  SELECT "posts".* FROM "posts" WHERE "posts"."user_id" = ? AND "posts"."forum_id" = ?  [["user_id", 1], ["forum_id", 1]]
 
 8. You have the following method in your posts controller:
 
@@ -87,19 +118,44 @@ You will see the SQL that is executed logged to the screen.  What is that SQL?
 There is a security exposure, a risk that a hacker could do damage.  What is that
 risk? What two things are done in your code to prevent the risk?
 
+Security Risk: 
+If the @post object is not properly authorized, a user might be able to delete posts they don't own or aren't permitted to modify. This could lead to unauthorized data deletion or manipulation.
 
+Potential Security Exposure: 
+A user could potentially craft a request to delete any post if the @post instance is not properly scoped to the current user’s posts or if access control is not enforced.
+
+Prevention measures (use strong parameters):
+Ensure proper authorization to confirm the user has permission to delete the post.
+Validate that the @post object is correctly scoped to the current user's posts.
 
 9. The routes for subscriptions are nested under the forum routes.  How does this
-change the routes?  What is the additional hash key and value that is passed in the
-params hash to the subscriptions controller as a result of this nesting? Which routes
-are unaffected by the nesting?
+change the routes?  
+When subscriptions routes are nested under forum routes, the routes for subscriptions will include the forum_id as part of the URL.
+Nested Route: /forums/:forum_id/subscriptions/:id
+Non-Nested Route: /subscriptions/:id
 
+What is the additional hash key and value that is passed in the
+params hash to the subscriptions controller as a result of this nesting?
+Due to the nesting, an additional hash key :forum_id is passed in the params hash to the SubscriptionsController.
+params[:forum_id]
 
+Which routes are unaffected by the nesting?
+the routes for other controllers and resources that are not nested will remain unaffected
 
+Nested: 
+resources :forums do
+  resources :subscriptions
+end
+Non-Nested:
+resources :subscriptions
+(/subscriptions (GET for index, POST for create)
+/subscriptions/:id (GET for show, PATCH/PUT for update, DELETE for destroy)
+will remain unaffected by the nesting under forums)
 
 10. Every action method must do exactly one of two things -- that is, each
 method may do all sorts of logic, but at the end, it has to do one of two
 things, depending on the outcome of the logic.  What are those two things?
 
-
+render (return some type of response (JSON, XML))
+redirect_to (another URL)
 
