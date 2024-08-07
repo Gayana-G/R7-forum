@@ -1,4 +1,13 @@
 Rails.application.routes.draw do
+  root 'forums#index'
+
+  resources :forums do
+    resources :posts, shallow: true, except: [:index]
+    resources :subscriptions, shallow: true, except: [:index]
+  end
+
+  resources :subscriptions, only: [:index]
+
   get 'posts/create'
   get 'posts/new'
   get 'posts/edit'
@@ -6,8 +15,7 @@ Rails.application.routes.draw do
   get 'posts/up'
   get 'posts/date'
   get 'posts/distroy'
-  #resources :users
-  root 'forums#index'
+
   get '/users', to: 'users#index', as: 'users'
   get '/users/new', to: 'users#new', as: 'new_user'
   get '/users/:id', to: 'users#show', as: 'user'
@@ -15,14 +23,10 @@ Rails.application.routes.draw do
   post '/users', to: 'users#create'
   patch '/users/:id', to: 'users#update'
   delete '/users/:id', to: 'users#delete'
-  resources :forums do
-    resources :posts, shallow: true, except:[:index]
-    resources :subscriptions, shallow: true, except:[:index]
-  end
-  get '/subscripltions', to: 'subscriptions#index', as: 'subscriptions'
 
   post '/users/:id/logon', to: 'users#logon', as: 'user_logon'
   delete '/users/logoff', to: 'users#logoff', as: 'user_logoff'
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Defines the root path route ("/")
